@@ -377,6 +377,30 @@
     display: flex; align-items: center; justify-content: center; gap: 6px;
     font-size: 13px; font-weight: 600; color: var(--n700); padding: 8px; cursor: pointer;
   }
+
+  /* Nav controls */
+  .nav-controls {
+    display: flex; align-items: center; justify-content: center;
+    gap: 16px; margin-top: 20px;
+  }
+  .nav-btn {
+    width: 40px; height: 40px; border-radius: 888px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s; color: rgba(255,255,255,0.7);
+  }
+  .nav-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.25);
+    color: white;
+  }
+  .nav-btn:disabled {
+    opacity: 0.25; cursor: default;
+  }
+  .nav-counter {
+    font-size: 12px; font-family: 'Noto Sans', sans-serif;
+    color: rgba(255,255,255,0.4); font-weight: 600;
+    min-width: 50px; text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -819,37 +843,118 @@
 </div>
 </div>
 
-<div class="nav-hint">Click through the screens to explore both happy and recovery flows</div>
+<div class="nav-controls" id="navControls">
+  <button class="nav-btn" id="navBack" onclick="goBack()" disabled>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="nav-counter" id="navCounter">1 / 1</div>
+  <button class="nav-btn" id="navFwd" onclick="goForward()" disabled>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </button>
+</div>
+<div class="nav-hint">Click, swipe, or use ← → arrow keys to navigate</div>
 
 <script>
-  let currentScreen = 's-permissions';
+  // ─── History Stack ───
+  const history = [{ id: 's-permissions', title: 'Permissions', desc: 'Location (required) + Wi-Fi (optional) — two signals for better accuracy', tag: 'entry' }];
+  let historyIndex = 0;
 
-  function goTo(id, title, desc, tag) {
-    const prev = document.getElementById(currentScreen);
-    const next = document.getElementById(id);
-    if (!next || id === currentScreen) return;
+  function showScreen(entry, direction) {
+    const prev = document.querySelector('.screen.active');
+    const next = document.getElementById(entry.id);
+    if (!next) return;
+    if (prev && prev.id === entry.id) return;
 
-    prev.classList.remove('active');
+    // Transition direction
+    if (prev) {
+      prev.classList.remove('active');
+      prev.style.transform = direction === 'forward' ? 'translateX(-20px)' : 'translateX(20px)';
+    }
+    next.style.transform = direction === 'forward' ? 'translateX(20px)' : 'translateX(-20px)';
+    // Force reflow
+    next.offsetHeight;
     next.classList.add('active');
-    currentScreen = id;
+    next.style.transform = 'translateX(0)';
 
     // Update flow info
     const info = document.getElementById('flowInfo');
-    if (title) {
-      const tagClass = tag || 'entry';
-      const tagLabels = { happy: 'Happy Flow', recovery: 'Recovery Flow', entry: 'Entry', check: 'Check' };
-      info.innerHTML = `
-        <span class="flow-tag ${tagClass}">${tagLabels[tagClass] || tagClass}</span>
-        <div class="flow-title">${title}</div>
-        <div class="flow-desc">${desc || ''}</div>
-      `;
-    }
+    const tagLabels = { happy: 'Happy Flow', recovery: 'Recovery Flow', entry: 'Entry', check: 'Check' };
+    info.innerHTML = `
+      <span class="flow-tag ${entry.tag || 'entry'}">${tagLabels[entry.tag] || entry.tag || 'Entry'}</span>
+      <div class="flow-title">${entry.title}</div>
+      <div class="flow-desc">${entry.desc || ''}</div>
+    `;
+
+    updateNav();
   }
+
+  function goTo(id, title, desc, tag) {
+    const entry = { id, title: title || '', desc: desc || '', tag: tag || 'entry' };
+
+    // Trim forward history if we're going to a new screen mid-stack
+    if (historyIndex < history.length - 1) {
+      history.splice(historyIndex + 1);
+    }
+
+    history.push(entry);
+    historyIndex = history.length - 1;
+    showScreen(entry, 'forward');
+  }
+
+  function goBack() {
+    if (historyIndex <= 0) return;
+    historyIndex--;
+    showScreen(history[historyIndex], 'backward');
+  }
+
+  function goForward() {
+    if (historyIndex >= history.length - 1) return;
+    historyIndex++;
+    showScreen(history[historyIndex], 'forward');
+  }
+
+  function updateNav() {
+    const backBtn = document.getElementById('navBack');
+    const fwdBtn = document.getElementById('navFwd');
+    const counter = document.getElementById('navCounter');
+
+    backBtn.disabled = historyIndex <= 0;
+    fwdBtn.disabled = historyIndex >= history.length - 1;
+    counter.textContent = `${historyIndex + 1} / ${history.length}`;
+  }
+
+  // ─── Keyboard Navigation ───
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'Backspace') { e.preventDefault(); goBack(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goForward(); }
+  });
+
+  // ─── Swipe Navigation ───
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    // Only trigger if horizontal swipe is dominant and > 60px
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx > 0) goBack();    // swipe right = back
+      else goForward();         // swipe left = forward
+    }
+  }, { passive: true });
 
   function selectDist(el) {
     document.querySelectorAll('.dist-btn').forEach(b => b.classList.remove('selected'));
     el.classList.add('selected');
   }
+
+  // Initial state
+  updateNav();
 </script>
 
 </body>
