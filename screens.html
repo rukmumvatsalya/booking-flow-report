@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking Flow — Location Clarity Screens</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Brand */
+    --wiom-brand-600: #D9008D;
+    --wiom-brand-300: #FFB2E4;
+    --wiom-brand-200: #FFCCED;
+    --wiom-brand-100: #FFE5F6;
+    --wiom-brand-secondary: #443152;
+
+    /* Neutrals */
+    --wiom-neutral-900: #161021;
+    --wiom-neutral-800: #352D42;
+    --wiom-neutral-700: #665E75;
+    --wiom-neutral-500: #A7A1B2;
+    --wiom-neutral-300: #D7D3E0;
+    --wiom-neutral-200: #E8E4F0;
+    --wiom-neutral-100: #F1EDF7;
+    --wiom-neutral-white: #FAF9FC;
+
+    /* Semantic */
+    --wiom-positive-600: #008043;
+    --wiom-positive-200: #C9F0DD;
+    --wiom-positive-100: #E1FAED;
+    --wiom-negative-600: #D92130;
+    --wiom-negative-200: #FFCCD0;
+    --wiom-negative-100: #FFE5E7;
+    --wiom-warning-700: #B85C00;
+    --wiom-warning-600: #FF8000;
+    --wiom-warning-200: #FFE6CC;
+    --wiom-info-600: #6D17CE;
+    --wiom-info-100: #F1E5FF;
+    --wiom-caution-800: #806000;
+    --wiom-caution-200: #FFF2BF;
+
+    /* Shadows */
+    --wiom-shadow-2dp: 0 2px 6px rgba(0,0,0,0.15);
+    --wiom-shadow-4dp: 0 4px 12px rgba(0,0,0,0.15);
+    --wiom-shadow-pink-glow: 0 4px 12px rgba(217,43,144,0.3);
+
+    /* Layout */
+    --wiom-screen-width: 360px;
+    --wiom-screen-height: 720px;
+    --wiom-content-width: 328px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans Devanagari', 'Noto Sans', sans-serif;
+    background: #F1EDF7;
+    color: var(--wiom-neutral-900);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Page Layout ─── */
+  .page-header {
+    text-align: center;
+    padding: 48px 24px 32px;
+  }
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--wiom-neutral-900);
+    margin-bottom: 8px;
+  }
+  .page-header p {
+    font-size: 14px;
+    color: var(--wiom-neutral-700);
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  .section-divider {
+    text-align: center;
+    padding: 40px 24px 24px;
+  }
+  .section-divider .label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 16px;
+    border-radius: 888px;
+    margin-bottom: 8px;
+  }
+  .section-divider .label.fp { background: var(--wiom-negative-100); color: var(--wiom-negative-600); }
+  .section-divider .label.fn { background: var(--wiom-warning-200); color: var(--wiom-warning-700); }
+  .section-divider .label.trust { background: var(--wiom-info-100); color: var(--wiom-info-600); }
+  .section-divider .label.confirm { background: var(--wiom-positive-100); color: var(--wiom-positive-600); }
+  .section-divider h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--wiom-neutral-900);
+    margin-bottom: 4px;
+  }
+  .section-divider p {
+    font-size: 13px;
+    color: var(--wiom-neutral-700);
+  }
+
+  .screens-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 32px;
+    padding: 0 24px 40px;
+  }
+
+  /* ─── Screen Frame ─── */
+  .screen-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .screen-meta {
+    text-align: center;
+    max-width: 320px;
+  }
+  .screen-meta .screen-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--wiom-brand-600);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .screen-meta .screen-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--wiom-neutral-900);
+    margin-bottom: 2px;
+  }
+  .screen-meta .screen-desc {
+    font-size: 12px;
+    color: var(--wiom-neutral-500);
+    line-height: 1.4;
+  }
+
+  .phone {
+    width: var(--wiom-screen-width);
+    height: var(--wiom-screen-height);
+    background: var(--wiom-neutral-white);
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: var(--wiom-shadow-4dp), 0 0 0 1px var(--wiom-neutral-200);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* Status Bar */
+  .status-bar {
+    height: 24px;
+    background: var(--wiom-neutral-white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--wiom-neutral-800);
+    flex-shrink: 0;
+  }
+  .status-bar .icons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .status-bar .icons svg { width: 14px; height: 14px; }
+
+  /* App Bar */
+  .app-bar {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    flex-shrink: 0;
+  }
+  .app-bar .back-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 888px;
+    cursor: pointer;
+  }
+  .app-bar .back-btn svg {
+    width: 20px;
+    height: 20px;
+    color: var(--wiom-neutral-800);
+  }
+  .app-bar .bar-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--wiom-neutral-900);
+    margin-left: 8px;
+  }
+
+  /* Screen Content */
+  .screen-content {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Typography */
+  .t1 { font-size: 24px; font-weight: 700; line-height: 1.3; color: var(--wiom-neutral-900); }
+  .t2 { font-size: 20px; font-weight: 700; line-height: 1.3; color: var(--wiom-neutral-900); }
+  .t3 { font-size: 16px; font-weight: 700; line-height: 1.4; color: var(--wiom-neutral-900); }
+  .b1 { font-size: 16px; font-weight: 400; line-height: 1.5; color: var(--wiom-neutral-700); }
+  .b2 { font-size: 14px; font-weight: 400; line-height: 1.5; color: var(--wiom-neutral-700); }
+  .b3 { font-size: 12px; font-weight: 400; line-height: 1.5; color: var(--wiom-neutral-500); }
+  .l2 { font-size: 14px; font-weight: 600; line-height: 1.4; }
+  .l3 { font-size: 12px; font-weight: 600; line-height: 1.4; }
+
+  /* Buttons */
+  .btn {
+    width: 100%;
+    height: 48px;
+    border-radius: 24px;
+    border: none;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: box-shadow 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-primary {
+    background: var(--wiom-brand-600);
+    color: var(--wiom-neutral-white);
+  }
+  .btn-primary:hover { box-shadow: var(--wiom-shadow-pink-glow); }
+  .btn-secondary {
+    background: var(--wiom-brand-100);
+    color: var(--wiom-brand-600);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--wiom-neutral-800);
+    border: 1px solid var(--wiom-neutral-300);
+  }
+  .btn-success {
+    background: var(--wiom-positive-600);
+    color: white;
+  }
+  .btn-sub {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.75;
+    margin-top: 1px;
+  }
+  .btn-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    padding: 14px 24px;
+  }
+
+  /* Input */
+  .input-group {
+    margin-bottom: 16px;
+  }
+  .input-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--wiom-neutral-700);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .input-field {
+    width: 100%;
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid var(--wiom-neutral-300);
+    background: var(--wiom-neutral-white);
+    padding: 0 16px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--wiom-neutral-500);
+    outline: none;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--wiom-neutral-white);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: var(--wiom-shadow-2dp);
+    margin-bottom: 12px;
+  }
+
+  /* Area List Item */
+  .area-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--wiom-neutral-white);
+    border: 1px solid var(--wiom-neutral-200);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .area-item:hover { border-color: var(--wiom-brand-300); }
+  .area-item .area-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--wiom-neutral-900);
+  }
+  .area-item .area-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 888px;
+    background: var(--wiom-positive-100);
+    color: var(--wiom-positive-600);
+  }
+
+  /* Warning Banner */
+  .banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .banner.warning {
+    background: var(--wiom-caution-200);
+    color: var(--wiom-caution-800);
+  }
+  .banner.info {
+    background: var(--wiom-info-100);
+    color: var(--wiom-info-600);
+  }
+  .banner.error {
+    background: var(--wiom-negative-100);
+    color: var(--wiom-negative-600);
+  }
+  .banner.success {
+    background: var(--wiom-positive-100);
+    color: var(--wiom-positive-600);
+  }
+  .banner svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* Refund Card */
+  .refund-card {
+    background: var(--wiom-neutral-100);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 12px 0;
+  }
+  .refund-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  .refund-row .label { color: var(--wiom-neutral-700); }
+  .refund-row .value { font-weight: 600; color: var(--wiom-neutral-900); }
+  .refund-row .value.status { color: var(--wiom-positive-600); }
+
+  /* Notify CTA */
+  .notify-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    border: 1.5px dashed var(--wiom-brand-300);
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--wiom-brand-600);
+    cursor: pointer;
+    margin-top: 12px;
+    transition: background 0.15s;
+  }
+  .notify-cta:hover { background: var(--wiom-brand-100); }
+
+  /* Link */
+  .link {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--wiom-brand-600);
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 8px;
+  }
+
+  /* Illustration placeholder */
+  .illust {
+    width: 160px;
+    height: 160px;
+    border-radius: 888px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    flex-shrink: 0;
+  }
+  .illust svg { width: 64px; height: 64px; }
+
+  /* Map placeholder */
+  .map-placeholder {
+    width: 100%;
+    height: 180px;
+    border-radius: 16px;
+    background: var(--wiom-neutral-100);
+    border: 1px dashed var(--wiom-neutral-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+  }
+  .map-placeholder svg { width: 32px; height: 32px; color: var(--wiom-neutral-500); }
+  .map-placeholder span { font-size: 12px; color: var(--wiom-neutral-500); font-weight: 600; }
+
+  /* Progress indicator */
+  .progress-dots {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: auto;
+    padding: 16px 0;
+  }
+  .progress-dots .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 888px;
+    background: var(--wiom-neutral-300);
+  }
+  .progress-dots .dot.active { background: var(--wiom-brand-600); width: 24px; }
+
+  /* Location match animation circle */
+  .match-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 888px;
+    background: var(--wiom-positive-100);
+    border: 3px solid var(--wiom-positive-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+  }
+  .match-circle svg { width: 48px; height: 48px; color: var(--wiom-positive-600); }
+
+  /* Schedule buttons */
+  .schedule-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .schedule-btn {
+    flex: 1;
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid var(--wiom-neutral-300);
+    background: var(--wiom-neutral-white);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--wiom-neutral-800);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .schedule-btn:hover {
+    border-color: var(--wiom-brand-600);
+    background: var(--wiom-brand-100);
+    color: var(--wiom-brand-600);
+  }
+  .schedule-btn.selected {
+    border-color: var(--wiom-brand-600);
+    background: var(--wiom-brand-100);
+    color: var(--wiom-brand-600);
+  }
+
+  /* Spacer helpers */
+  .spacer-8 { height: 8px; flex-shrink: 0; }
+  .spacer-12 { height: 12px; flex-shrink: 0; }
+  .spacer-16 { height: 16px; flex-shrink: 0; }
+  .spacer-20 { height: 20px; flex-shrink: 0; }
+  .spacer-24 { height: 24px; flex-shrink: 0; }
+  .spacer-32 { height: 32px; flex-shrink: 0; }
+  .mt-auto { margin-top: auto; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--wiom-neutral-200);
+    margin: 12px 0;
+  }
+
+  /* Or separator */
+  .or-sep {
+    text-align: center;
+    font-size: 12px;
+    color: var(--wiom-neutral-500);
+    margin: 8px 0;
+    position: relative;
+  }
+  .or-sep::before, .or-sep::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: var(--wiom-neutral-200);
+  }
+  .or-sep::before { left: 0; }
+  .or-sep::after { right: 0; }
+
+  /* Helper text */
+  .helper-text {
+    font-size: 12px;
+    color: var(--wiom-neutral-500);
+    text-align: center;
+    line-height: 1.5;
+    padding: 0 8px;
+  }
+
+  /* Bottom anchor (sticky CTAs) */
+  .bottom-anchor {
+    padding: 16px;
+    background: var(--wiom-neutral-white);
+    border-top: 1px solid var(--wiom-neutral-200);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Contact link */
+  .contact-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--wiom-neutral-700);
+    padding: 8px;
+    cursor: pointer;
+  }
+  .contact-link svg { width: 16px; height: 16px; }
+</style>
+</head>
+<body>
+
+<div style="display:flex;justify-content:center;padding:16px 24px 0;">
+  <a href="index.html" style="font-family:'Noto Sans',sans-serif;font-size:13px;font-weight:600;color:#D9008D;text-decoration:none;padding:8px 20px;border:1.5px solid #FFB2E4;border-radius:888px;">&#8592; FP/FN Report</a>
+</div>
+<div class="page-header">
+  <h1>Location Clarity — Booking Flow</h1>
+  <p>11 screens addressing false positives and false negatives in the serviceability check. Designed with Wiom Design System tokens, Hindi-first copy.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION: ENTRY — Location Intent -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider">
+  <span class="label fp">Entry Point</span>
+  <h2>Location Intent + Fallbacks</h2>
+  <p>Fixes FP2, FN2, FN3 — Captures real intent before any serviceability check</p>
+</div>
+
+<div class="screens-row">
+
+  <!-- Screen 1: Location Intent -->
+  <div class="screen-wrapper">
+    <div class="screen-meta">
+      <div class="screen-num">Screen 01</div>
+      <div class="screen-name">Location Intent</div>
+      <div class="screen-desc">Fixes FP2 + FN3 — Asks where user wants net, not assuming current GPS = installation location</div>
+    </div>
+    <div class="phone">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="icons">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+        </div>
+      </div>
+      <div class="app-bar">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--wiom-brand-600)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+          <span style="font-size:16px;font-weight:700;color:var(--wiom-brand-600);">wiom</span>
+        </div>
+      </div>
+      <div class="screen-content">
+        <div class="spacer-32"></div>
+        <div class="illust" style="background:var(--wiom-brand-100);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--wiom-brand-600)" stroke-width="1.5">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <circle cx="12" cy="9" r="2.5"/>
+          </svg>
+        </div>
+        <h1 class="t1" style="text-align:center;">नेट कहाँ चाहिए?</h1>
+        <div class="spacer-8"></div>
+        <p class="b2" style="text-align:center;">क्या आप अभी उसी जगह हैं जहाँ नेट लगवाना है?</p>
+        <div class="spacer-32"></div>
+        <button class="btn btn-primary btn-stack">
+          <span>हाँ, यहीं चाहिए</span>
+          <span class="btn-sub">GPS से लोकेशन लेंगे</span>
+        </button>
+        <div class="spacer-8"></div>
+        <button class="btn btn-secondary btn-stack">
+          <span>नहीं, दूसरी जगह</span>
+          <span class="btn-sub">इलाका सर्च करें</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 2: GPS Fallback -->
+  <div class="screen-wrapper">
+    <div class="screen-meta">
+      <div class="screen-num">Screen 02</div>
+      <div class="screen-name">GPS Accuracy Fallback</div>
+      <div class="screen-desc">Fixes FN1 — Poor GPS accuracy? Don't reject. Fallback to manual search.</div>
+    </div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="app-bar">
+        <div class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+      </div>
+      <div class="screen-content">
+        <div class="spacer-32"></div>
+        <div class="illust" style="background:var(--wiom-warning-200);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--wiom-warning-700)" stroke-width="1.5">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <path d="M12 7v4M12 13h.01"/>
+          </svg>
+        </div>
+        <h1 class="t1" style="text-align:center;">लोकेशन ठीक से नहीं मिल पाई</h1>
+        <div class="spacer-8"></div>
+        <p class="b2" style="text-align:center;">आपकी सटीक लोकेशन अभी नहीं मिल रही। अपना इलाका सर्च करके बताइए।</p>
+        <div class="spacer-24"></div>
+        <button class="btn btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          इलाका सर्च करें
+        </button>
+        <div class="spacer-16"></div>
+        <div class="banner info">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          <span>चिंता न करें — यह फ़ोन की GPS सेटिंग की वजह से है, आपकी कोई गलती नहीं।</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 3: Permission Denied -->
+  <div class="screen-wrapper">
+    <div class="screen-meta">
+      <div class="screen-num">Screen 03</div>
+      <div class="screen-name">Permission Denied Fallback</div>
+      <div class="screen-desc">Fixes FN2 — No blame, smooth pivot to manual search</div>
+    </div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="app-bar">
+        <div class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+      </div>
+      <div class="screen-content">
+        <div class="spacer-32"></div>
+        <div class="illust" style="background:var(--wiom-positive-100);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--wiom-positive-600)" stroke-width="1.5">
+            <path d="M14 9V5a3 3 0 00-6 0v1"/>
+            <rect x="5" y="9" width="14" height="12" rx="2"/>
+            <circle cx="12" cy="15" r="1.5"/>
+          </svg>
+        </div>
+        <h1 class="t1" style="text-align:center;">कोई बात नहीं!</h1>
+        <div class="spacer-8"></div>
+        <p class="b2" style="text-align:center;">लोकेशन के बिना भी आगे बढ़ सकते हैं। बस अपना इलाका सर्च करके बताइए।</p>
+        <div class="spacer-32"></div>
+        <button class="btn btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          इलाका सर्च करें
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION: Serviceability Results -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider">
+  <span class="label fn">Serviceability</span>
+  <h2>Serviceability Check Results</h2>
+  <p>Fixes FN4, FN5 — Never a dead-end. Always show alternatives.</p>
+</div>
+
+<div class="screens-row">
+
+  <!-- Screen 4: Not Serviceable + Nearby -->
+  <div class="screen-wrapper">
+    <div class="screen-meta">
+      <div class="screen-num">Screen 04</div>
+      <div class="screen-name">Not Serviceable + Nearby Areas</div>
+      <div class="screen-desc">Fixes FN4 — Shows alternatives instead of a dead-end rejection</div>
+    </div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="app-bar">
+        <div class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+      </div>
+      <div class="screen-content">
+        <h1 class="t2">यहाँ अभी सेवा नहीं है</h1>
+        <div class="spacer-8"></div>
+        <p class="b2">आपके इलाके में अभी नेट उपलब्ध नहीं है। लेकिन कुछ पास के इलाकों में है —</p>
+        <div class="spacer-16"></div>
+        <p class="l3" style="color:var(--wiom-neutral-700);margin-bottom:8px;">पास के इलाके</p>
+        <div class="area-item">
+          <span class="area-name">राजपुर खुर्द</span>
+          <span class="area-badge">उपलब्ध</span>
+        </div>
+        <div class="area-item">
+          <span class="area-name">राजपुर रोड</span>
+          <span class="area-badge">उपलब्ध</span>
+        </div>
+        <div class="area-item">
+          <span class="area-name">न्यू राजपुर कॉलोनी</span>
+          <span class="area-badge">उपलब्ध</span>
+        </div>
+        <div class="spacer-8"></div>
+        <p class="b3" style="text-align:center;">अपना सही इलाका दिख रहा हो तो उसे चुनें</p>
+        <div class="mt-auto"></div>
+        <div class="notify-cta">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+          उपलब्ध होने पर बताएं
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 5: Fuzzy Search -->
+  <div class="screen-wrapper">
+    <div class="screen-meta">
+      <div class="screen-num">Screen 05</div>
+      <div class="screen-name">Fuzzy Search Results</div>
+      <div class="screen-desc">Fixes FN4 — No exact match? Show close matches for self-correction</div>
+    </div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="app-bar">
+        <div class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+        <span class="bar-title">सर्च</span>
+      </div>
+      <div class="screen-content">
+        <!-- Search bar -->
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--wiom-neutral-100);border-radius:12px;margin-bottom:16px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--wiom-neutral-500)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <span style="font-size:14px;color:var(--wiom-neutral-900);font-weight:600;">राजपुर</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--wiom-neutral-500)" stroke-width="2" style="margin-left:auto;"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </div>
+        <h2 class="t3">ये इलाके मिलते-जुलते हैं</h2>
+        <div class="spacer-4"></div>
+        <p class="b3" style="margin-bottom:16px;">आपने जो सर्च किया उसका सटीक मिलान नहीं मिला। क्या इनमें से कोई आपका इलाका है?</p>
+        <div class="area-item">
+          <div>
+            <div class="area-name">राजपुर खुर्द</div>
+            <div class="b3">देहरादून, उत्तराखंड</div>
+          </div>
+          <span class="area-badge">उपलब्ध</span>
+        </div>
+        <div class="area-item">
+          <div>
+            <div class="area-name">राजपुर रोड</div>
+            <div class="b3">देहरादून, उत्तराखंड</div>
+          </div>
+          <span class="area-badge">उपलब्ध</span>
+        </div>
+        <div class="area-item">
+          <div>
+            <div class="area-name">न्यू राजपुर कॉलोनी</div>
+            <div class="b3">देहरादून, उत्तराखंड</div>
+          </div>
+          <span class="area-badge">उपलब्ध</span>
+        </div>
+        <div class="mt-auto"></div>
+        <a class="link">मेरा इलाका नहीं दिख रहा</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 7: Doubtful Serviceability -->
+  <div class="screen-wrapper">
+    <div class="screen-meta">
+      <div class="screen-num">Screen 07</div>
+      <div class="screen-name">Doubtful Serviceability</div>
+      <div class="screen-desc">Fixes FN5 — Boundary area. Honest expectation, not a hard block.</div>
+    </div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="app-bar">
+        <div class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+      </div>
+      <div class="screen-content">
+        <div class="spacer-24"></div>
+        <div class="illust" style="background:var(--wiom-caution-200);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--wiom-caution-800)" stroke-width="1.5">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <circle cx="12" cy="9" r="2.5" stroke-dasharray="4 2"/>
+          </svg>
+        </div>
+        <h1 class="t1" style="text-align:center;">आपके इलाके में सेवा संभव है</h1>
+        <div class="spacer-8"></div>
+        <p class="b2" style="text-align:center;">यह इलाका हमारी सेवा की सीमा पर है। पता कन्फर्म करने के बाद हम पक्का बता पाएंगे।</p>
+        <div class="spacer-24"></div>
+        <div class="banner success">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+          <span>अगर सेवा उपलब्ध नहीं हुई तो पूरा रिफ़ंड मिलेगा — कोई पैसा नहीं कटेगा।</span>
+        </div>
+        <div class="mt-auto"></div>
+        <button class="btn btn-primary">पता बताकर आगे बढ़ें</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION: Pre-Payment -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider">
+  <span class="label fp">Pre-Payment</span>
+  <h2>Address + Pin (Before Payment)</h2>
+  <p>Fixes FP4 — Pin-level serviceability check BEFORE money moves</p>
+</div>
+
+<div class="screens-row">
+
+  <!-- Screen 6: Address + Pin -->
+  <div class="screen-wrapper">
+    <div class="screen-meta">
+      <div class="screen-num">Screen 06</div>
+      <div class="screen-name">Address + Pin Entry</div>
+      <div class="screen-desc">Fixes FP4 — Collect precise location before payment. "Let us make sure this works for you."</div>
+    </div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="app-bar">
+        <div class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+        <span class="bar-title">पता बताइए</span>
+      </div>
+      <div class="screen-content">
+        <p class="b2" style="margin-bottom:16px;">नेट बॉक्स यहीं भेजा जाएगा — सही पता होने से सेटअप जल्दी होगा।</p>
+
+        <div class="map-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <circle cx="12" cy="9" r="2.5"/>
+          </svg>
+          <span>मैप पर पिन लगाएं</span>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">पूरा पता</label>
+          <input class="input-field" placeholder="मकान नं, गली, मोहल्ला" disabled>
+        </div>
+        <div class="input-group">
+          <label class="input-label">पिनकोड</label>
+          <input class="input-field" placeholder="6 अंकों का पिनकोड" disabled>
+        </div>
+
+        <div class="banner info" style="margin-top:4px;">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+          <span>यह पता भुगतान से पहले चेक होगा ताकि कोई दिक्कत न हो</span>
+        </div>
+      </div>
+      <div class="bottom-anchor">
+        <button class="btn btn-primary">पता कन्फर्म करें</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION: Post-Payment Presence -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider">
+  <span class="label confirm">Presence Check</span>
+  <h2>Post-Payment — Location Presence</h2>
+  <p>Fixes FP5, FN6 — Passive GPS check, advance booking, no false self-declarations</p>
+</div>
+
+<div class="screens-row">
+
+  <!-- Screen 8: Auto Match -->
+  <div class="screen-wrapper">
+    <div class="screen-meta">
+      <div class="screen-num">Screen 08</div>
+      <div class="screen-name">Passive GPS Match</div>
+      <div class="screen-desc">GPS matches address. Auto-proceed — brief confirmation, no action needed from user.</div>
+    </div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="app-bar">
+        <div class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+      </div>
+      <div class="screen-content" style="align-items:center;justify-content:center;">
+        <div class="match-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h1 class="t1" style="text-align:center;color:var(--wiom-positive-600);">लोकेशन कन्फर्म हो गई</h1>
+        <div class="spacer-12"></div>
+        <p class="b1" style="text-align:center;">आपकी लोकेशन और पता मैच हो रहे हैं।</p>
+        <div class="spacer-8"></div>
+        <p class="b2" style="text-align:center;color:var(--wiom-neutral-500);">सेटअप पार्टनर को भेज रहे हैं...</p>
+        <div class="spacer-32"></div>
+        <!-- Progress dots -->
+        <div style="display:flex;justify-content:center;gap:6px;">
+          <div style="width:8px;height:8px;border-radius:888px;background:var(--wiom-positive-600);"></div>
+          <div style="width:8px;height:8px;border-radius:888px;background:var(--wiom-positive-200);animation:pulse 1s infinite alternate;"></div>
+          <div style="width:8px;height:8px;border-radius:888px;background:var(--wiom-positive-100);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 9: Mismatch -->
+  <div class="screen-wrapper">
+    <div class="screen-meta">
+      <div class="screen-num">Screen 09</div>
+      <div class="screen-name">GPS vs Address Mismatch</div>
+      <div class="screen-desc">Fixes FP5 — User not at address. Gentle hold, no blame. "Baad mein" is equally valid.</div>
+    </div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="app-bar">
+        <div class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+      </div>
+      <div class="screen-content">
+        <div class="spacer-16"></div>
+        <div class="illust" style="background:var(--wiom-warning-200);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--wiom-warning-700)" stroke-width="1.5">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <path d="M10 8l4 4M14 8l-4 4"/>
+          </svg>
+        </div>
+        <h1 class="t2" style="text-align:center;">लगता है आप अभी दूसरी जगह हैं</h1>
+        <div class="spacer-8"></div>
+        <p class="b2" style="text-align:center;">आपकी मौजूदा लोकेशन और दिए गए पते में फ़र्क़ दिख रहा है। सेटअप के लिए आपका उस पते पर होना ज़रूरी है।</p>
+        <div class="spacer-20"></div>
+        <button class="btn btn-primary">मैं वहाँ पहुँचकर बताऊँगा</button>
+        <div class="spacer-8"></div>
+        <button class="btn btn-secondary">बाद में करते हैं</button>
+        <div class="spacer-16"></div>
+        <div class="banner warning">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+          <span>अगर ग़लत पते पर सेटअप हुआ तो बुकिंग कैंसिल हो सकती है और रिफ़ंड में समय लग सकता है।</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 10: Schedule Presence -->
+  <div class="screen-wrapper">
+    <div class="screen-meta">
+      <div class="screen-num">Screen 10</div>
+      <div class="screen-name">Schedule Presence</div>
+      <div class="screen-desc">Fixes FN6 — User not there yet? Pick a date. We'll remind. Booking stays alive.</div>
+    </div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="app-bar">
+        <div class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+      </div>
+      <div class="screen-content">
+        <div class="spacer-16"></div>
+        <div class="illust" style="background:var(--wiom-brand-100);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--wiom-brand-600)" stroke-width="1.5">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+          </svg>
+        </div>
+        <h1 class="t1" style="text-align:center;">कब पहुँचेंगे उस पते पर?</h1>
+        <div class="spacer-8"></div>
+        <p class="b2" style="text-align:center;">जिस दिन आप वहाँ होंगे, हम आपको याद दिला देंगे।</p>
+        <div class="spacer-24"></div>
+        <div class="schedule-row">
+          <button class="schedule-btn selected">आज</button>
+          <button class="schedule-btn">कल</button>
+        </div>
+        <button class="btn btn-outline" style="margin-bottom:16px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          तारीख़ चुनें
+        </button>
+        <div class="spacer-8"></div>
+        <div class="banner info">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          <span>उस दिन एक नोटिफ़िकेशन आएगा — फिर आगे बढ़ सकेंगे</span>
+        </div>
+        <div class="mt-auto"></div>
+        <button class="btn btn-primary">तारीख़ कन्फर्म करें</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION: Trust Recovery -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider">
+  <span class="label trust">Trust Recovery</span>
+  <h2>Refund + Future Lead</h2>
+  <p>Safety net for all FPs — Auto-refund, proactive status, notify-me conversion</p>
+</div>
+
+<div class="screens-row">
+
+  <!-- Screen 11: Trust Recovery -->
+  <div class="screen-wrapper">
+    <div class="screen-meta">
+      <div class="screen-num">Screen 11</div>
+      <div class="screen-name">Trust Recovery / Refund</div>
+      <div class="screen-desc">When prevention fails. Auto-refund, transparent status, convert failure into future lead.</div>
+    </div>
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><div class="icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+      <div class="app-bar">
+        <div class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+      </div>
+      <div class="screen-content">
+        <div class="spacer-16"></div>
+        <div class="illust" style="background:var(--wiom-negative-100);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--wiom-negative-600)" stroke-width="1.5">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <path d="M15 8l-6 6M9 8l6 6"/>
+          </svg>
+        </div>
+        <h1 class="t2" style="text-align:center;">यह इलाका अभी सर्विस में नहीं आ पाया</h1>
+        <div class="spacer-8"></div>
+        <p class="b2" style="text-align:center;">चिंता न करें — आपका पूरा पैसा वापस आ रहा है।</p>
+        <div class="spacer-16"></div>
+
+        <div class="refund-card">
+          <div style="font-size:11px;font-weight:700;color:var(--wiom-neutral-700);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">रिफ़ंड स्टेटस</div>
+          <div class="refund-row">
+            <span class="label">स्टेटस</span>
+            <span class="value status">प्रोसेसिंग &#10003;</span>
+          </div>
+          <div class="refund-row">
+            <span class="label">राशि</span>
+            <span class="value">&#8377;100</span>
+          </div>
+          <div class="refund-row">
+            <span class="label">वापसी</span>
+            <span class="value">2-3 दिन में</span>
+          </div>
+        </div>
+
+        <div class="banner success" style="margin-bottom:4px;">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          <span>रिफ़ंड अपने-आप शुरू हो गया है — आपको कुछ नहीं करना</span>
+        </div>
+
+        <div class="notify-cta">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+          उपलब्ध होने पर बताएं
+        </div>
+
+        <div class="spacer-12"></div>
+        <p class="helper-text">हम आपके इलाके पर नज़र रख रहे हैं। जैसे ही सेवा आए, आपको सबसे पहले बताएंगे।</p>
+
+        <div class="mt-auto"></div>
+        <div class="contact-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.574 2.81.7A2 2 0 0122 16.92z"/></svg>
+          हमसे बात करें
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center;padding:40px 24px 64px;">
+  <p style="font-size:12px;color:var(--wiom-neutral-500);">Booking Flow — Location Clarity Screens &middot; Wiom Design System &middot; April 2026</p>
+</div>
+
+</body>
+</html>
