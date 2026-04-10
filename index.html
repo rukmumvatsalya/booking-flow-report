@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking Flow Analysis — FP/FN Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --surface-alt: #F5F7FA;
+    --border: #E2E8F0;
+    --border-light: #EDF2F7;
+    --text-primary: #1A202C;
+    --text-secondary: #4A5568;
+    --text-muted: #718096;
+    --accent: #3B82F6;
+    --accent-light: #EFF6FF;
+    --green: #10B981;
+    --green-light: #ECFDF5;
+    --green-border: #A7F3D0;
+    --red: #EF4444;
+    --red-light: #FEF2F2;
+    --red-border: #FECACA;
+    --orange: #F59E0B;
+    --orange-light: #FFFBEB;
+    --orange-border: #FDE68A;
+    --purple: #8B5CF6;
+    --purple-light: #F5F3FF;
+    --purple-border: #DDD6FE;
+    --teal: #14B8A6;
+    --teal-light: #F0FDFA;
+    --teal-border: #99F6E4;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    line-height: 1.7;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Sidebar Nav ─── */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 32px 0;
+    z-index: 100;
+  }
+  .sidebar-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 0 24px;
+    margin-bottom: 16px;
+  }
+  .sidebar a {
+    display: block;
+    padding: 8px 24px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+  .sidebar a:hover, .sidebar a.active {
+    color: var(--accent);
+    background: var(--accent-light);
+    border-left-color: var(--accent);
+  }
+  .sidebar a.sub {
+    padding-left: 40px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .sidebar-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 12px 24px;
+  }
+
+  /* ─── Main Content ─── */
+  .main {
+    margin-left: 260px;
+    max-width: 860px;
+    padding: 48px 56px 120px;
+  }
+
+  /* ─── Header ─── */
+  .report-header {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .report-header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .report-header .subtitle {
+    font-size: 16px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  .report-header .meta {
+    margin-top: 16px;
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ─── Sections ─── */
+  .section {
+    margin-bottom: 56px;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    margin-top: 32px;
+    line-height: 1.3;
+  }
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    margin-top: 24px;
+  }
+  p {
+    margin-bottom: 14px;
+    color: var(--text-secondary);
+  }
+  strong { color: var(--text-primary); }
+
+  /* ─── Flow Steps ─── */
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 24px 0;
+  }
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    position: relative;
+    padding-bottom: 24px;
+  }
+  .flow-step:last-child { padding-bottom: 0; }
+  .flow-step::before {
+    content: '';
+    position: absolute;
+    left: 17px;
+    top: 36px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .flow-step:last-child::before { display: none; }
+  .step-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 2px solid var(--accent);
+  }
+  .step-content {
+    flex: 1;
+    padding-top: 6px;
+  }
+  .step-content .step-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  .step-content .step-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 0;
+  }
+  .step-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .step-tag.money { background: #FEF3C7; color: #92400E; }
+  .step-tag.gap { background: var(--red-light); color: var(--red); }
+
+  /* ─── Structural Issues ─── */
+  .issue-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .issue-card .issue-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+  }
+  .issue-card .issue-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+  }
+
+  /* ─── FP/FN Tables ─── */
+  .case-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 20px 0;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .case-table thead {
+    background: var(--surface-alt);
+  }
+  .case-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .case-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: top;
+    color: var(--text-secondary);
+  }
+  .case-table tr:last-child td { border-bottom: none; }
+  .case-table .case-id {
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .case-id.fp { color: var(--red); }
+  .case-id.fn { color: var(--orange); }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 99px;
+    white-space: nowrap;
+  }
+  .badge.covered { background: var(--green-light); color: #065F46; border: 1px solid var(--green-border); }
+  .badge.partial { background: var(--orange-light); color: #92400E; border: 1px solid var(--orange-border); }
+  .badge.not-covered { background: var(--red-light); color: #991B1B; border: 1px solid var(--red-border); }
+
+  /* ─── Intervention Section ─── */
+  .intervention-box {
+    background: var(--accent-light);
+    border: 1px solid #BFDBFE;
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 20px 0;
+  }
+  .intervention-box h4 {
+    color: var(--accent);
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+  .intervention-box p {
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  .intervention-box ul {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+  .intervention-box li {
+    margin-bottom: 4px;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .verdict-box {
+    background: var(--orange-light);
+    border: 1px solid var(--orange-border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #78350F;
+  }
+  .verdict-box strong { color: #92400E; }
+
+  /* ─── Confidence Model ─── */
+  .signal-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  .signal-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--purple-light);
+    color: var(--purple);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1.5px solid var(--purple-border);
+  }
+  .signal-content {
+    flex: 1;
+  }
+  .signal-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+  .signal-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .scenario-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 16px 0;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .scenario-table th {
+    text-align: left;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--border);
+  }
+  .scenario-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: top;
+    color: var(--text-secondary);
+  }
+  .scenario-table tr:last-child td { border-bottom: none; }
+
+  /* ─── Fix Cards ─── */
+  .fix-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .fix-card-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .fix-priority {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .fix-priority.p1 { background: var(--red-light); color: var(--red); border: 1px solid var(--red-border); }
+  .fix-priority.p2 { background: var(--orange-light); color: #B45309; border: 1px solid var(--orange-border); }
+  .fix-priority.p3 { background: var(--accent-light); color: var(--accent); border: 1px solid #BFDBFE; }
+  .fix-card-header .fix-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .fix-card-header .fix-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .fix-card-body {
+    padding: 20px 24px;
+  }
+  .fix-card-body p {
+    font-size: 14px;
+  }
+  .fix-solves {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-light);
+  }
+  .fix-solves .badge { font-size: 11px; }
+
+  /* ─── Flow Diagram (ASCII-style) ─── */
+  .flow-diagram {
+    background: #1E293B;
+    color: #E2E8F0;
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin: 24px 0;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .flow-diagram .highlight { color: #60A5FA; }
+  .flow-diagram .green { color: #34D399; }
+  .flow-diagram .red { color: #F87171; }
+  .flow-diagram .yellow { color: #FBBF24; }
+  .flow-diagram .dim { color: #64748B; }
+
+  /* ─── Screen Mockups ─── */
+  .screen-mock {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    max-width: 340px;
+    overflow: hidden;
+    margin: 16px 0;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+  .screen-mock-status {
+    background: #1E293B;
+    color: white;
+    padding: 6px 16px;
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .screen-mock-body {
+    padding: 24px 20px;
+  }
+  .screen-mock-body .screen-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+  }
+  .screen-mock-body .screen-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .mock-btn {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 10px;
+    border: none;
+  }
+  .mock-btn.primary {
+    background: var(--accent);
+    color: white;
+  }
+  .mock-btn.secondary {
+    background: var(--surface-alt);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .mock-btn .btn-sub {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+  .mock-warning {
+    background: #FEF3C7;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #92400E;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mock-refund {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 12px 0;
+    font-size: 12px;
+  }
+  .mock-refund .refund-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .mock-refund .refund-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+  }
+  .mock-notify {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1.5px dashed var(--accent);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-top: 12px;
+    cursor: pointer;
+    justify-content: center;
+  }
+
+  .screens-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+  }
+
+  /* ─── Coverage Matrix ─── */
+  .matrix-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 20px 0;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .matrix-table th {
+    padding: 10px 8px;
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    white-space: nowrap;
+  }
+  .matrix-table th:first-child { text-align: left; padding-left: 14px; }
+  .matrix-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border-light);
+    text-align: center;
+    vertical-align: middle;
+  }
+  .matrix-table td:first-child {
+    text-align: left;
+    padding-left: 14px;
+    font-weight: 600;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .matrix-table tr:last-child td { border-bottom: none; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+  .dot.full { background: var(--green); }
+  .dot.partial { background: var(--orange); }
+  .dot.none { background: var(--border); }
+
+  /* ─── Phase Cards ─── */
+  .phase-section {
+    margin: 28px 0;
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .phase-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .phase-badge.p1 { background: var(--red-light); color: var(--red); }
+  .phase-badge.p2 { background: var(--orange-light); color: #B45309; }
+  .phase-badge.p3 { background: var(--teal-light); color: #0D9488; }
+  .phase-header .phase-title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .phase-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+  }
+  .phase-num {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text-muted);
+    width: 24px;
+    flex-shrink: 0;
+    padding-top: 1px;
+  }
+  .phase-content { flex: 1; }
+  .phase-content .phase-fix-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  .phase-content .phase-fix-solves {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* ─── Trust Recovery Section ─── */
+  .trust-box {
+    background: linear-gradient(135deg, #FDF4FF 0%, #FAF5FF 50%, #F5F3FF 100%);
+    border: 1px solid var(--purple-border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: 24px 0;
+  }
+  .trust-box h4 {
+    color: var(--purple);
+    margin-top: 0;
+  }
+  .trust-principles {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .trust-principle {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid var(--purple-border);
+  }
+  .trust-principle .tp-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--purple);
+    margin-bottom: 6px;
+  }
+  .trust-principle .tp-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+  }
+  .trust-principle .tp-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 0;
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 1024px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 32px 24px 80px; }
+    .trust-principles { grid-template-columns: 1fr; }
+    .screens-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-title">Report Sections</div>
+  <a href="#objective">Objective</a>
+  <a href="#current-flow">Current Flow</a>
+  <a href="#structural-issues">Structural Issues</a>
+  <div class="sidebar-divider"></div>
+  <a href="#false-positives">False Positives (FP)</a>
+  <a href="#false-negatives">False Negatives (FN)</a>
+  <div class="sidebar-divider"></div>
+  <a href="#intervention">Proposed Intervention</a>
+  <a class="sub" href="#coverage-assessment">Coverage Assessment</a>
+  <div class="sidebar-divider"></div>
+  <a href="#confidence-model">Progressive Confidence Model</a>
+  <a href="#fixes">Recommended Fixes</a>
+  <a class="sub" href="#fp-fixes">FP Fixes</a>
+  <a class="sub" href="#fn-fixes">FN Fixes</a>
+  <a href="#trust-recovery">Trust Recovery Layer</a>
+  <div class="sidebar-divider"></div>
+  <a href="#revised-flow">Revised Flow Architecture</a>
+  <a href="#matrix">Coverage Matrix</a>
+  <a href="#prioritization">Prioritized Implementation</a>
+</nav>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Header -->
+  <header class="report-header" id="top">
+    <h1>Booking Flow Analysis</h1>
+    <p class="subtitle">False Positive & False Negative Identification — with Progressive Confidence Model, UX Fixes & Trust Recovery</p>
+    <div class="meta">
+      <span class="meta-item"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> April 2026</span>
+      <span class="meta-item"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 6v4l3 3"/></svg> 7 FP + 6 FN cases</span>
+      <span class="meta-item"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> 10 recommended fixes</span>
+    </div>
+  </header>
+
+  <!-- 1. Objective -->
+  <section class="section" id="objective">
+    <div class="section-label">Section 1</div>
+    <h2>Objective</h2>
+    <p>The objective of the Booking Flow is to identify if we are serviceable at the customer's location and, if yes, enable them to book a new internet connection. The flow must ensure that from the moment a customer launches the app to the point where a connection is installed, the serviceability determination is <strong>accurate and trustworthy</strong>.</p>
+    <p>Two success metrics define this:</p>
+    <div style="display:flex;gap:16px;margin-top:8px;">
+      <div style="flex:1;background:var(--green-light);border:1px solid var(--green-border);border-radius:10px;padding:16px 20px;">
+        <div style="font-weight:700;font-size:13px;color:#065F46;margin-bottom:4px;">Precision (Minimize FPs)</div>
+        <div style="font-size:13px;color:#047857;">Every customer who pays should get a connection. A post-payment rejection is a trust-destroying event.</div>
+      </div>
+      <div style="flex:1;background:var(--orange-light);border:1px solid var(--orange-border);border-radius:10px;padding:16px 20px;">
+        <div style="font-weight:700;font-size:13px;color:#92400E;margin-bottom:4px;">Recall (Minimize FNs)</div>
+        <div style="font-size:13px;color:#B45309;">Every serviceable customer should be able to book. A wrongful rejection is lost revenue and a lost relationship.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Current Flow -->
+  <section class="section" id="current-flow">
+    <div class="section-label">Section 2</div>
+    <h2>Current Booking Flow</h2>
+
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <div class="step-title">App Launch & Location Permission</div>
+          <p class="step-desc">Capture customer's current GPS coordinates. Assumption: customer wants connection at their current location.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <div class="step-title">Serviceability Check (Broad Area)</div>
+          <p class="step-desc">Area-level check — not pin-precise. If serviceable, proceed. If not, show "not serviceable" with option to change location manually.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <div class="step-title">Onboarding & Pricing</div>
+          <p class="step-desc">How the service works, booking fee, setup fee, recharge model for internet access.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <div class="step-title">Phone Number Collection</div>
+          <p class="step-desc">Customer provides their phone number to proceed.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <div class="step-title">Booking Fee Payment <span class="step-tag money">Money moves</span></div>
+          <p class="step-desc">Customer pays the booking fee.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-number">6</div>
+        <div class="step-content">
+          <div class="step-title">Address Collection</div>
+          <p class="step-desc">Customer shares full address for CSP/partner navigation.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-number">7</div>
+        <div class="step-content">
+          <div class="step-title">Location Confirmation <span class="step-tag gap">Trust breaks here</span></div>
+          <p class="step-desc">"Are you at the location where you want the installation?" If yes, request shared with partner. If no, wait.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict-box">
+      <strong>The critical gap:</strong> Payment (Step 5) sits between the broad check (Step 2) and the precise pin check (Step 7). Any disagreement between these two stages means the customer pays, then gets rejected.
+    </div>
+  </section>
+
+  <!-- 3. Structural Issues -->
+  <section class="section" id="structural-issues">
+    <div class="section-label">Section 3</div>
+    <h2>Key Structural Issues</h2>
+
+    <div class="issue-card">
+      <div class="issue-title">1. Two-stage serviceability check with payment in between</div>
+      <p class="issue-desc">The coarse area-level check happens before payment; the precise pin-level check happens after. Any disagreement results in a false positive — the customer pays, then gets rejected. This is the single biggest source of trust erosion.</p>
+    </div>
+    <div class="issue-card">
+      <div class="issue-title">2. GPS as the sole default location signal</div>
+      <p class="issue-desc">GPS is convenient but imprecise, especially indoors. A single reading at a single moment is treated as ground truth — but it isn't. It drives both FPs (appears serviceable, isn't) and FNs (appears non-serviceable, is).</p>
+    </div>
+    <div class="issue-card">
+      <div class="issue-title">3. Assumption: current location = installation location</div>
+      <p class="issue-desc">The flow assumes the customer wants the connection where they are right now. Many customers are at their office, travelling, or planning ahead. This drives both FPs and FNs.</p>
+    </div>
+    <div class="issue-card">
+      <div class="issue-title">4. Ambiguous "Are you at the location?" confirmation</div>
+      <p class="issue-desc">Users treat this as a generic "next" button rather than a contractual confirmation. They don't understand it triggers a precise serviceability recheck with real consequences (cancellation and refund).</p>
+    </div>
+  </section>
+
+  <!-- 4. False Positives -->
+  <section class="section" id="false-positives">
+    <div class="section-label">Section 4</div>
+    <h2>False Positive Cases</h2>
+    <p>System indicates "serviceable" but the location is actually <strong>not serviceable</strong>. These are the more damaging cases because the customer has paid money and built expectations.</p>
+
+    <table class="case-table">
+      <thead>
+        <tr><th style="width:60px">ID</th><th>Description</th><th style="width:130px">Surfaces</th><th style="width:100px">Damage</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="case-id fp">FP1</span></td>
+          <td><strong>GPS drift at launch</strong> places the customer in a serviceable area, but they actually live just outside it. After payment, the pin-level check reveals non-serviceability.</td>
+          <td>Post-payment, pin capture</td>
+          <td><span class="badge not-covered" style="background:#FEE2E2;color:#991B1B;border-color:#FECACA;">High</span></td>
+        </tr>
+        <tr>
+          <td><span class="case-id fp">FP2</span></td>
+          <td><strong>User not at installation location.</strong> At office/travelling. Current GPS is serviceable, but their home/installation location is not. Proceeds through payment, fails at pin check.</td>
+          <td>Post-payment, confirmation</td>
+          <td><span class="badge not-covered" style="background:#FEE2E2;color:#991B1B;border-color:#FECACA;">Very High</span></td>
+        </tr>
+        <tr>
+          <td><span class="case-id fp">FP3</span></td>
+          <td><strong>Manual area selection mismatch.</strong> Actual location not serviceable, manually selects nearby serviceable area. Precise pin after payment is non-serviceable.</td>
+          <td>Post-payment, pin capture</td>
+          <td><span class="badge not-covered" style="background:#FEE2E2;color:#991B1B;border-color:#FECACA;">High</span></td>
+        </tr>
+        <tr>
+          <td><span class="case-id fp">FP4</span></td>
+          <td><strong>Broad area serviceable, pin is not.</strong> Partial coverage in area. Customer pays based on coarse check, gets rejected at pin-level check.</td>
+          <td>Post-payment, pin capture</td>
+          <td><span class="badge not-covered" style="background:#FEE2E2;color:#991B1B;border-color:#FECACA;">Highest</span></td>
+        </tr>
+        <tr>
+          <td><span class="case-id fp">FP5</span></td>
+          <td><strong>False confirmation.</strong> User confirms "I am at the location" without actually being there. Captured pin is wrong or non-serviceable.</td>
+          <td>Post-confirmation, partner dispatch</td>
+          <td><span class="badge not-covered" style="background:#FEE2E2;color:#991B1B;border-color:#FECACA;">Worst</span></td>
+        </tr>
+        <tr>
+          <td><span class="case-id fp">FP6</span></td>
+          <td><strong>Temporal serviceability change.</strong> Serviceable at booking time, not by installation time (capacity filled, infra issue, partner coverage change).</td>
+          <td>Installation time</td>
+          <td><span class="badge partial">Moderate</span></td>
+        </tr>
+        <tr>
+          <td><span class="case-id fp">FP7</span></td>
+          <td><strong>Physically inaccessible location.</strong> Serviceable at area and pin level, but physically inaccessible (high floor, basement, gated complex).</td>
+          <td>Installation time</td>
+          <td><span class="badge partial">Moderate</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 5. False Negatives -->
+  <section class="section" id="false-negatives">
+    <div class="section-label">Section 5</div>
+    <h2>False Negative Cases</h2>
+    <p>System indicates "not serviceable" but the location actually <strong>is serviceable</strong>. These represent lost revenue — customers who could have been served are turned away.</p>
+
+    <table class="case-table">
+      <thead>
+        <tr><th style="width:60px">ID</th><th>Description</th><th style="width:130px">Surfaces</th><th style="width:100px">Impact</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="case-id fn">FN1</span></td>
+          <td><strong>GPS drift rejects a serviceable user.</strong> GPS places them outside serviceable boundary. They see "not serviceable" and leave.</td>
+          <td>At launch</td>
+          <td><span class="badge not-covered" style="background:#FEE2E2;color:#991B1B;border-color:#FECACA;">High</span></td>
+        </tr>
+        <tr>
+          <td><span class="case-id fn">FN2</span></td>
+          <td><strong>Location permission denied.</strong> Without GPS, the app cannot perform any serviceability check and may not offer a viable alternative path.</td>
+          <td>At launch</td>
+          <td><span class="badge not-covered" style="background:#FEE2E2;color:#991B1B;border-color:#FECACA;">High</span></td>
+        </tr>
+        <tr>
+          <td><span class="case-id fn">FN3</span></td>
+          <td><strong>User not at installation location (FN side).</strong> At office/travelling — current location not serviceable, but home IS. Many drop off before trying manual change.</td>
+          <td>At launch</td>
+          <td><span class="badge not-covered" style="background:#FEE2E2;color:#991B1B;border-color:#FECACA;">Very High</span></td>
+        </tr>
+        <tr>
+          <td><span class="case-id fn">FN4</span></td>
+          <td><strong>Manual search fails.</strong> Can't find area (different spelling, colloquial name, new development). Assumes not serviceable.</td>
+          <td>During manual change</td>
+          <td><span class="badge partial">Moderate</span></td>
+        </tr>
+        <tr>
+          <td><span class="case-id fn">FN5</span></td>
+          <td><strong>Boundary-edge exclusion.</strong> Locations at edge incorrectly excluded due to conservative or outdated boundaries.</td>
+          <td>At launch</td>
+          <td><span class="badge partial">Low-Mod</span></td>
+        </tr>
+        <tr>
+          <td><span class="case-id fn">FN6</span></td>
+          <td><strong>Advance booking blocked.</strong> Confirms "No, I'm not at the location" and flow blocks. User is willing but can't be present soon (planning ahead, moving).</td>
+          <td>Post-payment, confirmation</td>
+          <td><span class="badge partial">Moderate</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 6. Proposed Intervention -->
+  <section class="section" id="intervention">
+    <div class="section-label">Section 6</div>
+    <h2>Proposed Intervention: Pre-Payment Location Recheck</h2>
+
+    <div class="intervention-box">
+      <h4>What Was Proposed</h4>
+      <p>Capture the customer's location again in the background just before the payment process begins:</p>
+      <ul>
+        <li><strong>If doubtful:</strong> Confirm the location with the customer before asking for the booking fee.</li>
+        <li><strong>If very different or wrong:</strong> Ask the customer to provide/select the location again.</li>
+      </ul>
+    </div>
+
+    <h3 id="coverage-assessment">Coverage Assessment</h3>
+
+    <table class="case-table">
+      <thead>
+        <tr><th style="width:60px">Case</th><th>Covered?</th><th>How</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="case-id fp">FP1</span></td>
+          <td><span class="badge partial">Partial</span></td>
+          <td>Second reading may correct a one-time GPS fluke. Consistently bad GPS (basement, metal roof) won't be caught.</td>
+        </tr>
+        <tr>
+          <td><span class="case-id fp">FP2</span></td>
+          <td><span class="badge partial">Partial</span></td>
+          <td>Catches if user has physically moved since launch. If still at the same non-installation location, GPS is the same.</td>
+        </tr>
+        <tr>
+          <td><span class="case-id fp">FP3</span></td>
+          <td><span class="badge covered">Well Covered</span></td>
+          <td>Background GPS reveals that user's actual position contradicts the area they manually selected.</td>
+        </tr>
+        <tr>
+          <td><span class="case-id fp">FP4</span></td>
+          <td><span class="badge not-covered">Not Covered</span></td>
+          <td>Both reads are still broad-area checks. The problem is granularity, not timing.</td>
+        </tr>
+        <tr>
+          <td><span class="case-id fp">FP5</span></td>
+          <td><span class="badge not-covered">Not Covered</span></td>
+          <td>Comprehension problem at confirmation step, not a location-detection problem.</td>
+        </tr>
+        <tr>
+          <td><span class="case-id fp">FP6–7</span></td>
+          <td><span class="badge not-covered">Not Covered</span></td>
+          <td>Temporal/physical issues unrelated to location accuracy.</td>
+        </tr>
+        <tr>
+          <td><span class="case-id fn">FN1–6</span></td>
+          <td><span class="badge not-covered">Not Covered</span></td>
+          <td>Users blocked at launch never reach payment. The recheck doesn't apply to them.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="verdict-box">
+      <strong>Verdict:</strong> The pre-payment recheck is worth implementing — it's low-cost and catches real drift/mismatch scenarios (FP1, FP2, FP3). But it's a tactical patch, not a structural fix. The biggest trust-killers (FP4, FP5) and the biggest funnel-killers (FN1, FN2, FN3) remain untouched.
+    </div>
+  </section>
+
+  <!-- 7. Progressive Confidence Model -->
+  <section class="section" id="confidence-model">
+    <div class="section-label">Section 7</div>
+    <h2>The Progressive Confidence Model</h2>
+    <p>The current flow treats serviceability as a single yes/no gate at launch. In reality, location accuracy is probabilistic. No single GPS reading or area selection is reliable enough to make a commitment — especially one involving money.</p>
+    <p><strong>Instead of one check, build a progressive confidence score from multiple signals collected through the flow.</strong> Each signal adds or reduces confidence. Decisions are triggered by confidence thresholds, not binary gates.</p>
+
+    <div style="margin:24px 0;">
+      <div class="signal-row">
+        <div class="signal-num">1</div>
+        <div class="signal-content">
+          <div class="signal-name">GPS at App Launch</div>
+          <div class="signal-desc">Broad area serviceability — first approximation</div>
+        </div>
+      </div>
+      <div class="signal-row">
+        <div class="signal-num">2</div>
+        <div class="signal-content">
+          <div class="signal-name">User Self-Report</div>
+          <div class="signal-desc">"I'm here" vs "different address" — intent signal, where do they actually want the connection?</div>
+        </div>
+      </div>
+      <div class="signal-row">
+        <div class="signal-num">3</div>
+        <div class="signal-content">
+          <div class="signal-name">Background GPS Before Payment</div>
+          <div class="signal-desc">Drift detection — has the user moved since launch?</div>
+        </div>
+      </div>
+      <div class="signal-row">
+        <div class="signal-num">4</div>
+        <div class="signal-content">
+          <div class="signal-name">Address + Pin Entry (Before Payment)</div>
+          <div class="signal-desc">Precise serviceability — the definitive check before money moves</div>
+        </div>
+      </div>
+      <div class="signal-row">
+        <div class="signal-num">5</div>
+        <div class="signal-content">
+          <div class="signal-name">GPS at Confirmation Step</div>
+          <div class="signal-desc">Physical presence verification — passive check, compared to address</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>How Signals Interact</h3>
+    <table class="scenario-table">
+      <thead>
+        <tr><th>Signals</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:600;">All signals agree — same serviceable area</td>
+          <td>High confidence — proceed smoothly</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">GPS says Area A, typed address in Area B</td>
+          <td><strong>Mismatch</strong> — "Aapka address aur location alag dikh raha hai — ek baar confirm kar lein"</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">Broad area serviceable, pin in partial-coverage zone</td>
+          <td><strong>Doubtful</strong> — "Aapke area mein service milne ki sambhavna hai — address se confirm hoga"</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">GPS accuracy > 500m</td>
+          <td><strong>Low confidence</strong> — Don't hard-block. Fallback to manual: "Hum aapki exact location nahi pakad paaye. Area search karein."</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 8. Recommended Fixes -->
+  <section class="section" id="fixes">
+    <div class="section-label">Section 8</div>
+    <h2>Recommended Fixes</h2>
+
+    <h3 id="fp-fixes">False Positive Fixes</h3>
+
+    <!-- FP4 Fix -->
+    <div class="fix-card">
+      <div class="fix-card-header">
+        <span class="fix-priority p1">P0</span>
+        <div>
+          <div class="fix-title">Move pin-level serviceability check BEFORE payment</div>
+          <div class="fix-subtitle">Targets: FP4 (directly), FP1 & FP3 (partially)</div>
+        </div>
+      </div>
+      <div class="fix-card-body">
+        <p><strong>Problem:</strong> Biggest trust killer. Customer pays based on coarse check, gets rejected at pin-level.</p>
+        <p><strong>Fix:</strong> After phone number but before payment, ask the customer to drop a pin or enter their building/street. Run the precise serviceability check. If serviceable, proceed to payment. If not, stop — no payment, no refund, no trust damage.</p>
+        <div class="flow-diagram"><span class="dim">Current:</span>  Broad check → Info → Phone → <span class="red">PAYMENT</span> → Address → Pin → Confirm
+<span class="dim">Proposed:</span> Broad check → Info → Phone → Address + Pin → <span class="green">Pin Check</span> → <span class="green">PAYMENT</span></div>
+
+        <div class="screen-mock">
+          <div class="screen-mock-status"><span>9:41</span><span>Wiom</span></div>
+          <div class="screen-mock-body">
+            <div class="screen-title">Apni jagah confirm karein</div>
+            <p class="screen-desc">Taaki hum sure ho sakein ki aapke yahaan net setup ho payega</p>
+            <button class="mock-btn primary">Map pe apna ghar select karein</button>
+            <div style="text-align:center;font-size:12px;color:var(--text-muted);margin:8px 0;">ya</div>
+            <input type="text" placeholder="Address type karein..." style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;" disabled>
+          </div>
+        </div>
+        <div class="fix-solves">
+          <span class="badge covered">FP4 Solved</span>
+          <span class="badge partial">FP1 Partial</span>
+          <span class="badge covered">FP3 Solved</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FP2 Fix -->
+    <div class="fix-card">
+      <div class="fix-card-header">
+        <span class="fix-priority p1">P0</span>
+        <div>
+          <div class="fix-title">"Where do you want the connection?" — ask upfront</div>
+          <div class="fix-subtitle">Targets: FP2, FN3 (two-for-one fix)</div>
+        </div>
+      </div>
+      <div class="fix-card-body">
+        <p><strong>Problem:</strong> Flow assumes current location = installation location. Many users are at office/travelling.</p>
+        <p><strong>Fix:</strong> Replace the silent GPS-based assumption with an explicit question at the very start. This removes the assumption and opens the funnel to users not at installation location.</p>
+        <div class="screen-mock">
+          <div class="screen-mock-status"><span>9:41</span><span>Wiom</span></div>
+          <div class="screen-mock-body">
+            <div class="screen-title">Net connection kahaan chahiye?</div>
+            <p class="screen-desc"></p>
+            <button class="mock-btn primary">Jahaan main abhi hoon<span class="btn-sub">GPS se location lenge</span></button>
+            <button class="mock-btn secondary">Doosri jagah par<span class="btn-sub">Address search karein</span></button>
+          </div>
+        </div>
+        <div class="fix-solves">
+          <span class="badge covered">FP2 Solved</span>
+          <span class="badge covered">FN3 Solved</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FP5 Fix -->
+    <div class="fix-card">
+      <div class="fix-card-header">
+        <span class="fix-priority p2">P1</span>
+        <div>
+          <div class="fix-title">Replace self-declaration with passive GPS verification</div>
+          <div class="fix-subtitle">Targets: FP5</div>
+        </div>
+      </div>
+      <div class="fix-card-body">
+        <p><strong>Problem:</strong> Users confirm "I am at the location" as a "next" button. They don't understand the consequences.</p>
+        <p><strong>Fix:</strong> Silently capture GPS and compare to the submitted address. If within radius, auto-proceed. If far, show a gentle hold message. If keeping the confirmation for edge cases, make consequences visible.</p>
+        <div class="screens-row">
+          <div class="screen-mock">
+            <div class="screen-mock-status"><span>9:41</span><span>Wiom — Auto Match</span></div>
+            <div class="screen-mock-body">
+              <div class="screen-title" style="color:var(--green);">Location match ho gaya</div>
+              <p class="screen-desc">Aap apne address ke paas hain. Partner ko bhej rahe hain.</p>
+              <button class="mock-btn primary" style="background:var(--green);">Aage badhein</button>
+            </div>
+          </div>
+          <div class="screen-mock">
+            <div class="screen-mock-status"><span>9:41</span><span>Wiom — Mismatch</span></div>
+            <div class="screen-mock-body">
+              <div class="screen-title">Lagta hai aap abhi wahaan nahi hain</div>
+              <p class="screen-desc">Koi baat nahi — jab aap wahaan pahunchein tab bataayein. Setup tabhi hoga.</p>
+              <button class="mock-btn primary">Main pahunch gaya hoon</button>
+              <button class="mock-btn secondary">Baad mein bataunga</button>
+              <div class="mock-warning">
+                <span>&#9888;</span> Galat location se booking cancel ho sakti hai
+              </div>
+            </div>
+          </div>
+        </div>
+        <p><strong>Grace period:</strong> Hold partner dispatch for 15–30 minutes after confirmation. Do a background GPS check during this window. If location shifts significantly, pause and re-confirm.</p>
+        <div class="fix-solves">
+          <span class="badge covered">FP5 Solved</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FP6 Fix -->
+    <div class="fix-card">
+      <div class="fix-card-header">
+        <span class="fix-priority p3">P2</span>
+        <div>
+          <div class="fix-title">Dispatch-time serviceability recheck</div>
+          <div class="fix-subtitle">Targets: FP6</div>
+        </div>
+      </div>
+      <div class="fix-card-body">
+        <p><strong>Fix:</strong> Before the partner is dispatched, run serviceability one final time. If something changed (capacity filled, infrastructure issue), notify the customer proactively instead of dispatching and failing.</p>
+        <div class="fix-solves">
+          <span class="badge covered">FP6 Solved</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FP7 Fix -->
+    <div class="fix-card">
+      <div class="fix-card-header">
+        <span class="fix-priority p3">P2</span>
+        <div>
+          <div class="fix-title">Building type field during address collection</div>
+          <div class="fix-subtitle">Targets: FP7</div>
+        </div>
+      </div>
+      <div class="fix-card-body">
+        <p><strong>Fix:</strong> Add a building type question: Independent house, Apartment (with floor), Gated society. Cross-reference against known installation constraints to filter obvious cases.</p>
+        <div class="fix-solves">
+          <span class="badge partial">FP7 Partial</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FN Fixes -->
+    <h3 id="fn-fixes" style="margin-top:48px;">False Negative Fixes</h3>
+
+    <!-- FN1 Fix -->
+    <div class="fix-card">
+      <div class="fix-card-header">
+        <span class="fix-priority p2">P1</span>
+        <div>
+          <div class="fix-title">GPS multi-read + accuracy-based fallback</div>
+          <div class="fix-subtitle">Targets: FN1, FN5 (partially)</div>
+        </div>
+      </div>
+      <div class="fix-card-body">
+        <p><strong>Fix:</strong> Don't hard-block on a single GPS reading. Take 2–3 readings and use the best accuracy value, or average them. If GPS accuracy is poor (&gt;500m), don't show "not serviceable" — instead fallback to manual search.</p>
+        <div class="screen-mock">
+          <div class="screen-mock-status"><span>9:41</span><span>Wiom</span></div>
+          <div class="screen-mock-body">
+            <div class="screen-title">Hum aapki exact location nahi pakad paaye</div>
+            <p class="screen-desc">Apna area search karein taaki hum check kar sakein</p>
+            <button class="mock-btn primary">Area search karein</button>
+          </div>
+        </div>
+        <div class="fix-solves">
+          <span class="badge covered">FN1 Solved</span>
+          <span class="badge partial">FN5 Partial</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FN2 Fix -->
+    <div class="fix-card">
+      <div class="fix-card-header">
+        <span class="fix-priority p2">P1</span>
+        <div>
+          <div class="fix-title">Manual search as primary path for permission denial</div>
+          <div class="fix-subtitle">Targets: FN2</div>
+        </div>
+      </div>
+      <div class="fix-card-body">
+        <p><strong>Fix:</strong> Offer manual search (locality or pincode) as a primary alternative, not an afterthought. The flow should feel equally smooth whether GPS is available or not.</p>
+        <div class="screen-mock">
+          <div class="screen-mock-status"><span>9:41</span><span>Wiom</span></div>
+          <div class="screen-mock-body">
+            <div class="screen-title">Koi baat nahi!</div>
+            <p class="screen-desc">Apna area ya pincode daalein — hum check kar lenge</p>
+            <button class="mock-btn primary">Area ya pincode search karein</button>
+          </div>
+        </div>
+        <div class="fix-solves">
+          <span class="badge covered">FN2 Solved</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FN4 Fix -->
+    <div class="fix-card">
+      <div class="fix-card-header">
+        <span class="fix-priority p3">P2</span>
+        <div>
+          <div class="fix-title">Fuzzy search + nearby serviceable area suggestions</div>
+          <div class="fix-subtitle">Targets: FN4</div>
+        </div>
+      </div>
+      <div class="fix-card-body">
+        <p><strong>Fix:</strong> Use fuzzy matching and show nearby serviceable areas when search returns no exact results. Let the user self-correct instead of assuming they're not serviceable.</p>
+        <div class="screen-mock">
+          <div class="screen-mock-status"><span>9:41</span><span>Wiom</span></div>
+          <div class="screen-mock-body">
+            <div class="screen-title">"Rajpur" se match nahi mila</div>
+            <p class="screen-desc">Kya aap in areas mein se hain?</p>
+            <button class="mock-btn secondary" style="text-align:left;padding-left:20px;">Rajpur Khurd — <span style="color:var(--green);font-size:12px;">Serviceable</span></button>
+            <button class="mock-btn secondary" style="text-align:left;padding-left:20px;">Rajpur Road — <span style="color:var(--green);font-size:12px;">Serviceable</span></button>
+            <button class="mock-btn secondary" style="text-align:left;padding-left:20px;">New Rajpur Colony — <span style="color:var(--green);font-size:12px;">Serviceable</span></button>
+            <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-muted);">Mera area nahi dikh raha</div>
+          </div>
+        </div>
+        <div class="fix-solves">
+          <span class="badge covered">FN4 Solved</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FN6 Fix -->
+    <div class="fix-card">
+      <div class="fix-card-header">
+        <span class="fix-priority p3">P2</span>
+        <div>
+          <div class="fix-title">Advance booking with scheduled presence confirmation</div>
+          <div class="fix-subtitle">Targets: FN6</div>
+        </div>
+      </div>
+      <div class="fix-card-body">
+        <p><strong>Fix:</strong> Let the user complete booking and select an installation date. As the date approaches, send a push notification to confirm presence and capture GPS. Decouples booking intent from physical presence.</p>
+        <div class="screen-mock">
+          <div class="screen-mock-status"><span>9:41</span><span>Wiom</span></div>
+          <div class="screen-mock-body">
+            <div class="screen-title">Kab tak aap us jagah pahunch jayenge?</div>
+            <p class="screen-desc">Hum aapko us din yaad dila denge aur tab location confirm karenge</p>
+            <button class="mock-btn primary">Aaj</button>
+            <button class="mock-btn secondary">Kal</button>
+            <button class="mock-btn secondary">Date select karein</button>
+          </div>
+        </div>
+        <div class="fix-solves">
+          <span class="badge covered">FN6 Solved</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Trust Recovery -->
+  <section class="section" id="trust-recovery">
+    <div class="section-label">Section 9</div>
+    <h2>Trust Recovery Layer</h2>
+    <p>Even with all fixes, some false positives will slip through. For those cases, the refund experience should <strong>actively rebuild trust</strong> instead of breaking it further.</p>
+
+    <div class="trust-box">
+      <h4>Principles</h4>
+      <div class="trust-principles">
+        <div class="trust-principle">
+          <div class="tp-num">01</div>
+          <div class="tp-title">Auto-trigger refund</div>
+          <p class="tp-desc">Don't make the user ask or call support. Refund should start the moment cancellation happens.</p>
+        </div>
+        <div class="trust-principle">
+          <div class="tp-num">02</div>
+          <div class="tp-title">Show status proactively</div>
+          <p class="tp-desc">The user should never wonder "where's my money?" — show refund status in-app immediately.</p>
+        </div>
+        <div class="trust-principle">
+          <div class="tp-num">03</div>
+          <div class="tp-title">Turn failure into a lead</div>
+          <p class="tp-desc">Capture intent for when coverage expands. The user becomes a warm lead, not a churned user.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-mock" style="max-width:380px;">
+      <div class="screen-mock-status"><span>9:41</span><span>Wiom</span></div>
+      <div class="screen-mock-body">
+        <div class="screen-title" style="font-size:15px;">Aapke exact address par abhi service available nahi hai</div>
+        <p class="screen-desc" style="font-size:13px;">Aapka ₹100 wapas ho raha hai — 2-3 din mein aapke account mein aa jayega</p>
+        <div class="mock-refund">
+          <div class="refund-label">Refund Status</div>
+          <div class="refund-row"><span>Status</span><span style="color:var(--green);font-weight:600;">Processing ✓</span></div>
+          <div class="refund-row"><span>Amount</span><span style="font-weight:600;">₹100</span></div>
+          <div class="refund-row"><span>Expected by</span><span style="font-weight:600;">12 April</span></div>
+        </div>
+        <div class="mock-notify">
+          <span>&#128276;</span> Jab yahaan service aaye, bataana
+        </div>
+        <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:12px;margin-bottom:0;">Hum aapke area par nazar rakh rahe hain. Jaise hi service aaye, aapko sabse pehle bataayenge.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. Revised Flow Architecture -->
+  <section class="section" id="revised-flow">
+    <div class="section-label">Section 10</div>
+    <h2>Revised Flow Architecture</h2>
+
+    <h3>Before (Current)</h3>
+    <div class="flow-diagram"><span class="dim">Launch</span> → <span class="highlight">GPS</span> → <span class="highlight">Broad Check</span> → <span class="dim">[Serviceable?]</span>
+  ├─ <span class="red">No → "Not serviceable" (dead-end-ish)</span>
+  └─ <span class="green">Yes</span> → Info → Phone → <span class="red">PAYMENT</span> → Address → Pin Check → Confirm
+                                   <span class="dim">↑</span>                              <span class="dim">↑</span>
+                             <span class="red">Money moves</span>                   <span class="red">Trust breaks if pin fails</span></div>
+
+    <h3>After (Proposed)</h3>
+    <div class="flow-diagram"><span class="dim">Launch</span> → <span class="yellow">"Where do you want the connection?"</span>
+  ├─ <span class="highlight">"Jahaan main hoon"</span> → GPS (multi-read, accuracy check)
+  └─ <span class="highlight">"Doosri jagah"</span> → Search (fuzzy match, nearby suggestions)
+         ↓
+  <span class="highlight">Broad Area Check</span> → <span class="dim">[Serviceable?]</span>
+  ├─ <span class="red">No</span> → "Yahan nahi hai, par ye nearby areas hain" + <span class="yellow">Notify me</span>
+  ├─ <span class="yellow">Doubtful</span> → "Sambhavna hai, address se confirm hoga"
+  └─ <span class="green">Yes</span> ↓
+      Info → Phone → <span class="green">Address + Pin</span> → <span class="green">Pin-level Check</span>
+                                  ├─ <span class="red">Not serviceable → Stop BEFORE payment</span>
+                                  │   <span class="dim">(no refund needed — money never moved)</span>
+                                  └─ <span class="green">Serviceable</span> ↓
+                                      Background GPS recheck (Signal 3)
+                                      ├─ <span class="yellow">Mismatch → Clarify</span>
+                                      └─ <span class="green">OK → PAYMENT</span>
+                                                ↓
+                                         <span class="green">Passive GPS vs Address</span>
+                                         ├─ <span class="green">Match → Dispatch partner</span>
+                                         ├─ <span class="yellow">Far → "Lagta hai aap wahaan nahi hain"</span>
+                                         └─ <span class="highlight">"Baad mein"</span> → Schedule date → Push → GPS → Dispatch</div>
+  </section>
+
+  <!-- 11. Coverage Matrix -->
+  <section class="section" id="matrix">
+    <div class="section-label">Section 11</div>
+    <h2>Coverage Matrix — All Fixes vs All Cases</h2>
+    <p style="font-size:13px;margin-bottom:8px;">
+      <span class="dot full"></span> Directly solved &nbsp;&nbsp;
+      <span class="dot partial"></span> Partially addressed &nbsp;&nbsp;
+      <span class="dot none"></span> Not covered by this fix
+    </p>
+
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th>Case</th>
+          <th>BG Recheck</th>
+          <th>Pin Before Pay</th>
+          <th>Where Want?</th>
+          <th>Passive GPS</th>
+          <th>Multi-read</th>
+          <th>Manual Path</th>
+          <th>Fuzzy Search</th>
+          <th>Adv. Booking</th>
+          <th>Trust Recovery</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--red);">FP1 GPS drift</td>
+          <td><span class="dot partial"></span></td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--red);">FP2 Not at home</td>
+          <td><span class="dot partial"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--red);">FP3 Manual select</td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--red);">FP4 Broad vs pin</td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--red);">FP5 False confirm</td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--red);">FP6 Temporal</td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--red);">FP7 Physical</td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+        </tr>
+        <tr style="background:var(--surface-alt);">
+          <td style="color:var(--orange);">FN1 GPS drift</td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot partial"></span></td>
+          <td><span class="dot partial"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+        </tr>
+        <tr style="background:var(--surface-alt);">
+          <td style="color:var(--orange);">FN2 No permission</td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+        </tr>
+        <tr style="background:var(--surface-alt);">
+          <td style="color:var(--orange);">FN3 Not at home</td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+          <td><span class="dot none"></span></td>
+        </tr>
+        <tr style="background:var(--surface-alt);">
+          <td style="color:var(--orange);">FN4 Search fails</td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+        </tr>
+        <tr style="background:var(--surface-alt);">
+          <td style="color:var(--orange);">FN5 Boundary</td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+        </tr>
+        <tr style="background:var(--surface-alt);">
+          <td style="color:var(--orange);">FN6 Advance book</td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot partial"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot none"></span></td>
+          <td><span class="dot full"></span></td>
+          <td><span class="dot none"></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 12. Prioritization -->
+  <section class="section" id="prioritization">
+    <div class="section-label">Section 12</div>
+    <h2>Prioritized Implementation</h2>
+
+    <div class="phase-section">
+      <div class="phase-header">
+        <span class="phase-badge p1">Phase 1</span>
+        <span class="phase-title">Highest Impact — Trust + Conversion</span>
+      </div>
+      <div class="phase-item">
+        <div class="phase-num">1</div>
+        <div class="phase-content">
+          <div class="phase-fix-name">Move pin-level check before payment</div>
+          <div class="phase-fix-solves">Solves FP4, FP3, FP1 — Eliminates #1 trust killer. Structural fix, not a patch.</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-num">2</div>
+        <div class="phase-content">
+          <div class="phase-fix-name">"Where do you want the connection?" upfront</div>
+          <div class="phase-fix-solves">Solves FP2, FN3 — Opens funnel to users not at installation location. Fixes both a major FP and FN with one change.</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-num">3</div>
+        <div class="phase-content">
+          <div class="phase-fix-name">Pre-payment background GPS recheck</div>
+          <div class="phase-fix-solves">Solves FP1, FP2, FP3 — Low cost, catches drift. Already decided — ship it.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-header">
+        <span class="phase-badge p2">Phase 2</span>
+        <span class="phase-title">Conversion Recovery</span>
+      </div>
+      <div class="phase-item">
+        <div class="phase-num">4</div>
+        <div class="phase-content">
+          <div class="phase-fix-name">Passive GPS confirmation (replace self-declaration)</div>
+          <div class="phase-fix-solves">Solves FP5 — Removes user's ability to incorrectly self-report.</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-num">5</div>
+        <div class="phase-content">
+          <div class="phase-fix-name">GPS multi-read + accuracy fallback</div>
+          <div class="phase-fix-solves">Solves FN1 — Prevents wrongful rejection at launch.</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-num">6</div>
+        <div class="phase-content">
+          <div class="phase-fix-name">Manual search as primary path (permission denial)</div>
+          <div class="phase-fix-solves">Solves FN2 — Unblocks an entire user segment.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-section">
+      <div class="phase-header">
+        <span class="phase-badge p3">Phase 3</span>
+        <span class="phase-title">Long Tail</span>
+      </div>
+      <div class="phase-item">
+        <div class="phase-num">7</div>
+        <div class="phase-content">
+          <div class="phase-fix-name">Fuzzy search + nearby area suggestions</div>
+          <div class="phase-fix-solves">Solves FN4 — Improves manual search success rate.</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-num">8</div>
+        <div class="phase-content">
+          <div class="phase-fix-name">Advance booking with scheduled presence</div>
+          <div class="phase-fix-solves">Solves FN6 — Opens funnel to planning-ahead users.</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-num">9</div>
+        <div class="phase-content">
+          <div class="phase-fix-name">Building type field</div>
+          <div class="phase-fix-solves">Partially solves FP7 — Filters obvious physical inaccessibility.</div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-num">10</div>
+        <div class="phase-content">
+          <div class="phase-fix-name">Dispatch-time serviceability recheck</div>
+          <div class="phase-fix-solves">Solves FP6 — Catches temporal changes before partner dispatch.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="trust-box" style="margin-top:32px;">
+      <h4>Always-On: Trust Recovery Layer</h4>
+      <p style="font-size:14px;color:var(--text-secondary);">The graceful refund experience (auto-refund, proactive status, notify-me CTA) should be implemented <strong>regardless of phase</strong> — it's the safety net for every FP that slips through any of the above fixes.</p>
+    </div>
+
+    <p style="font-size:13px;color:var(--text-muted);margin-top:32px;font-style:italic;">This report merges analysis from two independent reviews. Intended as a working reference for product and engineering teams. Each recommendation should be evaluated for implementation feasibility and prioritized within the current sprint/roadmap.</p>
+  </section>
+
+</div>
+
+<script>
+  // Highlight active sidebar link on scroll
+  const sections = document.querySelectorAll('.section, header');
+  const navLinks = document.querySelectorAll('.sidebar a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -80% 0px' });
+
+  sections.forEach(section => {
+    if (section.id) observer.observe(section);
+  });
+</script>
+</body>
+</html>
