@@ -864,11 +864,9 @@
       <div class="sp-8"></div>
       <p class="b1" style="text-align:center;">आपके पते पर नेट सेटअप हो सकता है।</p>
       <div class="sp-8"></div>
-      <p class="b2" style="text-align:center;color:var(--n500);">आगे बढ़ने पर बुकिंग की पूरी जानकारी मिलेगी।</p>
+      <p class="b2" style="text-align:center;color:var(--n500);" id="nearby-confirmed-sub"></p>
     </div>
-    <div class="bottom">
-      <button class="btn btn-p" onclick="goTo('s-payment','Payment','Serviceability confirmed via nearby connection — proceed to payment','happy')">&#8377;100 देकर बुक करें</button>
-    </div>
+    <div class="bottom" id="nearby-confirmed-cta"></div>
   </div>
 
   <!-- ══════════════════════════════════════ -->
@@ -972,6 +970,9 @@
 <div class="nav-hint">Click, swipe, or use ← → arrow keys to navigate</div>
 
 <script>
+  // ─── Flow Context ───
+  let seenOnboarding = false;
+
   // ─── History Stack ───
   const history = [{ id: 's-permissions', title: 'Permissions', desc: 'Location (required) + Wi-Fi (optional) — two signals for better accuracy', tag: 'entry' }];
   let historyIndex = 0;
@@ -992,6 +993,23 @@
     next.offsetHeight;
     next.classList.add('active');
     next.style.transform = 'translateX(0)';
+
+    // Track if user has seen onboarding
+    if (entry.id === 's-onboarding') seenOnboarding = true;
+    if (entry.id === 's-permissions') seenOnboarding = false; // reset on restart
+
+    // Dynamic CTA for nearby-confirmed based on context
+    if (entry.id === 's-nearby-confirmed') {
+      const subEl = document.getElementById('nearby-confirmed-sub');
+      const ctaEl = document.getElementById('nearby-confirmed-cta');
+      if (seenOnboarding) {
+        subEl.textContent = 'लोकेशन कन्फर्म हो गई — अब भुगतान करें।';
+        ctaEl.innerHTML = '<button class="btn btn-p" onclick="goTo(\'s-payment\',\'Payment\',\'Serviceability confirmed — proceed to payment\',\'happy\')">₹100 देकर बुक करें</button>';
+      } else {
+        subEl.textContent = 'आगे बढ़ने पर बुकिंग की पूरी जानकारी मिलेगी।';
+        ctaEl.innerHTML = '<button class="btn btn-p" onclick="goTo(\'s-onboarding\',\'Onboarding\',\'Nearby connection verified — entering happy flow\',\'happy\')">आगे बढ़ें</button>';
+      }
+    }
 
     // Update flow info
     const info = document.getElementById('flowInfo');
